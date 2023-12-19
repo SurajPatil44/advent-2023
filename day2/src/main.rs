@@ -60,7 +60,6 @@ fn main() {
     let mut ids = Vec::new();
     #[allow(unused_mut)]
     let mut reader = Content::read_from_file(&fname);
-    let mut found = false;
     for line in reader {
         let mut found = false;
         let (game_id, line) = partition(&line, ':');

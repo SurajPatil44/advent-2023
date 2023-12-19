@@ -27,6 +27,22 @@ where
     }
 }
 
+pub fn rstrip(haystack: &str) -> &str {
+    let mut i = 0;
+    loop {
+        if i >= haystack.len() {
+            break;
+        }
+
+        if haystack.as_bytes()[i].is_ascii_whitespace() {
+            i += 1;
+        } else {
+            break;
+        }
+    }
+    &haystack[i..].as_ref()
+}
+
 impl Iterator for Content {
     type Item = String; // neew to use cow
     fn next(&mut self) -> Option<String> {

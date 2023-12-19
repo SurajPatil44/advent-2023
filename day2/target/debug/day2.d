@@ -1,1 +1,0 @@
-/Users/surajpatil/codes/interesting/advent-2023/day2/target/debug/day2: /Users/surajpatil/codes/interesting/advent-2023/day2/src/main.rs /Users/surajpatil/codes/interesting/advent-2023/utils/src/lib.rs

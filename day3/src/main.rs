@@ -85,19 +85,29 @@ impl Grid {
         nums
     }
 
-    fn is_valid<F: Fn(u8) -> bool>(&self, num: &Number, P: F) -> bool {
+    fn is_valid<F: Fn(u8) -> bool>(&self, num: &mut Number, P: F) -> bool {
+        //
+        //     (-1,-1)................................(   -1,end.1+1)
+        //     ( 0,-1)(0,0)..............(end.0,end.1)(end.0,end.1,+1)
+        //     (+1,-1)................................(   +1,end.1,+1)
+        //
+
+        //  up => [num.start.0 - 1][num.start.1 - 1..end.1+1]
+        //  down => [num.start.0 + 1][num.start.1 - 1..end.1+1]
+        //  left => [num.start.0][num.start.1-1]
+        //  right => [num.start.0][num.end+1]
+
         let start = num.start;
         let end = num.end;
         // up
         let st = start.0.saturating_sub(1);
         let first = start.1.saturating_sub(1);
         let second = bound_check_gt(end.1 + 1, self.wd);
-        //dbg!(st, first, second);
         if st > 0 {
             let bd = bound_check_gt(second + 1, self.wd);
-            for c in self.data[st][first..bd].iter() {
+            for (ind, c) in self.data[st][first..bd].iter().enumerate() {
                 if P(*c) {
-                    //num.valid = true;
+                    num.sLocation = (st, ind + first);
                     return true;
                 }
             }
@@ -106,9 +116,9 @@ impl Grid {
         let ed = start.0 + 1;
         if ed < self.ht {
             let bd = bound_check_gt(second + 1, self.wd);
-            for c in self.data[ed][first..bd].iter() {
+            for (ind, c) in self.data[ed][first..bd].iter().enumerate() {
                 if P(*c) {
-                    //num.valid = true;
+                    num.sLocation = (ed, ind + first);
                     return true;
                 }
             }
@@ -118,6 +128,7 @@ impl Grid {
         let sl = start.1.saturating_sub(1);
         if sl > 0 {
             if P(self.data[start.0][sl]) {
+                num.sLocation = (start.0, sl);
                 return true;
             }
         }
@@ -126,6 +137,7 @@ impl Grid {
 
         if sr < self.wd {
             if P(self.data[start.0][sr]) {
+                num.sLocation = (start.0, sr);
                 return true;
             }
         }
@@ -138,43 +150,37 @@ struct Number {
     Num: String, //change it later
     start: (usize, usize),
     end: (usize, usize),
+    sLocation: (usize, usize),
 }
 
 impl Number {
-    fn overlapping(&self,other : &Number,wd : usize) -> bool {
-        let (x1,y1,x2,y2) = self.get_rectangle(wd);
-        let (x,y) = (other.start.0.saturating_sub(1),other.start.1.saturating_sub(1));
-        (x >= x1) & (x <= x2) & (y >= y1) & (y <= y2)
+    fn overlapping(&self, other: &Number) -> bool {
+        self.sLocation.0 == other.sLocation.0 && self.sLocation.1 == other.sLocation.1
     }
-
-    fn get_rectangle(&self,wd : usize) -> (usize,usize,usize,usize) {
-        (self.start.0,self.start.1,bound_check_gt(self.end.0 + 1, wd),
-        bound_check_gt(self.end.1 + 1, wd))
-    }
-
-    
 }
 fn main() {
     let mut args = std::env::args();
     let _pgm_name = args.next();
     let fname = args.next().unwrap_or("sample.txt".to_string());
     let grid = Grid::from_file_path(&fname);
-    let nums = grid.get_nums();
-    let mut sum = 0;
-    //sum += num.Num.parse::<usize>().unwrap();
-    let fnums: Vec<_> = nums
-        .iter()
-        .filter(|x| grid.is_valid(x, |c| c == b'*'))
-        .collect();
-    //dbg!(&fnums);
-    let mut overlapping_nums : Vec<(&str,&str)> = vec![];
-
-    for (ind,num1) in fnums.iter().enumerate(){
-        for num2 in &fnums[ind+1..] {
-            if num1.overlapping(num2,grid.wd) {
-                overlapping_nums.push((&num1.Num,&num2.Num));
+    let mut nums = grid.get_nums();
+    let mut fnums: Vec<_> = vec![];
+    for num in nums.iter_mut() {
+        if grid.is_valid(num, |c| c == b'*') {
+            fnums.push(num);
+        }
+    }
+    let mut overlapping_nums: Vec<(usize, usize)> = vec![];
+    for (ind, num1) in fnums.iter().enumerate() {
+        for num2 in &fnums[ind + 1..] {
+            if num1.overlapping(num2) {
+                overlapping_nums.push((
+                    num1.Num.parse::<usize>().unwrap(),
+                    num2.Num.parse::<usize>().unwrap(),
+                ));
             }
         }
     }
-    dbg!(overlapping_nums);
+    let sum: usize = overlapping_nums.iter().map(|x| x.0 * x.1).sum();
+    dbg!(sum);
 }

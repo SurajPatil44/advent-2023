@@ -85,7 +85,7 @@ impl Grid {
         nums
     }
 
-    fn is_valid(&self, num: &Number) -> bool {
+    fn is_valid<F : Fn(u8) -> bool>(&self, num: &Number,P : F) -> bool {
         let start = num.start;
         let end = num.end;
         // up
@@ -96,7 +96,7 @@ impl Grid {
         if st > 0 {
             let bd = bound_check_gt(second + 1, self.wd);
             for c in self.data[st][first..bd].iter() {
-                if *c != b'.' {
+                if P(*c) {
                     //num.valid = true;
                     return true;
                 }
@@ -107,7 +107,7 @@ impl Grid {
         if ed < self.ht {
             let bd = bound_check_gt(second + 1, self.wd);
             for c in self.data[ed][first..bd].iter() {
-                if *c != b'.' {
+                if P(*c) {
                     //num.valid = true;
                     return true;
                 }
@@ -117,7 +117,7 @@ impl Grid {
         // sides
         let sl = start.1.saturating_sub(1);
         if sl > 0 {
-            if self.data[start.0][sl] != b'.' {
+            if P(self.data[start.0][sl]) {
                 return true;
             }
         }
@@ -125,7 +125,7 @@ impl Grid {
         let sr = end.1 + 1;
 
         if sr < self.wd {
-            if self.data[start.0][sr] != b'.' {
+            if P(self.data[start.0][sr]) {
                 return true;
             }
         }
@@ -147,7 +147,7 @@ fn main() {
     let nums = grid.get_nums();
     let mut sum = 0;
     for num in nums {
-        if grid.is_valid(&num) {
+        if grid.is_valid(&num,|x| {x != b'.'}) {
             sum += num.Num.parse::<usize>().unwrap();
         } else {
             //dbg!(&num);

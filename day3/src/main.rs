@@ -139,6 +139,21 @@ struct Number {
     start: (usize, usize),
     end: (usize, usize),
 }
+
+impl Number {
+    fn overlapping(&self,other : &Number,wd : usize) -> bool {
+        let (x1,y1,x2,y2) = self.get_rectangle(wd);
+        let (x,y) = (other.start.0.saturating_sub(1),other.start.1.saturating_sub(1));
+        (x >= x1) & (x <= x2) & (y >= y1) & (y <= y2)
+    }
+
+    fn get_rectangle(&self,wd : usize) -> (usize,usize,usize,usize) {
+        (self.start.0,self.start.1,bound_check_gt(self.end.0 + 1, wd),
+        bound_check_gt(self.end.1 + 1, wd))
+    }
+
+    
+}
 fn main() {
     let mut args = std::env::args();
     let _pgm_name = args.next();
@@ -151,5 +166,15 @@ fn main() {
         .iter()
         .filter(|x| grid.is_valid(x, |c| c == b'*'))
         .collect();
-    dbg!(&fnums);
+    //dbg!(&fnums);
+    let mut overlapping_nums : Vec<(&str,&str)> = vec![];
+
+    for (ind,num1) in fnums.iter().enumerate(){
+        for num2 in &fnums[ind+1..] {
+            if num1.overlapping(num2,grid.wd) {
+                overlapping_nums.push((&num1.Num,&num2.Num));
+            }
+        }
+    }
+    dbg!(overlapping_nums);
 }

@@ -85,7 +85,7 @@ impl Grid {
         nums
     }
 
-    fn is_valid<F : Fn(u8) -> bool>(&self, num: &Number,P : F) -> bool {
+    fn is_valid<F: Fn(u8) -> bool>(&self, num: &Number, P: F) -> bool {
         let start = num.start;
         let end = num.end;
         // up
@@ -146,12 +146,10 @@ fn main() {
     let grid = Grid::from_file_path(&fname);
     let nums = grid.get_nums();
     let mut sum = 0;
-    for num in nums {
-        if grid.is_valid(&num,|x| {x != b'.'}) {
-            sum += num.Num.parse::<usize>().unwrap();
-        } else {
-            //dbg!(&num);
-        }
-    }
-    dbg!(&sum);
+    //sum += num.Num.parse::<usize>().unwrap();
+    let fnums: Vec<_> = nums
+        .iter()
+        .filter(|x| grid.is_valid(x, |c| c == b'*'))
+        .collect();
+    dbg!(&fnums);
 }

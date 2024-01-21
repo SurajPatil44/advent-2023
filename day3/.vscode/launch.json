@@ -20,7 +20,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["input.txt"],
+            "args": ["sample.txt"],
             "cwd": "${workspaceFolder}"
         }
     ]
